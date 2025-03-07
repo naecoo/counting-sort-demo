@@ -26,8 +26,8 @@ ENV/
 env/
 
 # Manim相关
+partial_movie_files
 __pycache__/
-*.mp4
 *.gif
 *.png
 *.jpg
