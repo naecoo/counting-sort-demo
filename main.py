@@ -1,6 +1,16 @@
 from manim import *
+import sys
+import os
 
 class CountingSort(Scene):
+    def __init__(self):
+        super().__init__()
+        # 设置配置以确保正确居中
+        self.camera.frame_width = 16  # 增加帧宽度
+        self.camera.frame_height = 9  # 设置帧高度，保持16:9比例
+        self.camera.pixel_width = 1920  # 设置像素宽度
+        self.camera.pixel_height = 1080  # 设置像素高度
+
     def construct(self):
         # 介绍标题
         title = Text("计数排序", font_size=60)
@@ -19,7 +29,7 @@ class CountingSort(Scene):
         
         # 创建计数数组
         count_array = [0] * 10  # 0-9的计数数组
-        count_squares = self.create_array(count_array, "计数数组", y_offset=-1)
+        count_squares = self.create_array(count_array, "计数数组", y_offset=-2)
         
         # 添加索引标签
         index_labels = []
@@ -62,7 +72,7 @@ class CountingSort(Scene):
         
         # 生成输出结果
         output_array = [0] * len(input_array)
-        output_squares = self.create_array(output_array, "输出数组", y_offset=-2)
+        output_squares = self.create_array(output_array, "输出数组", y_offset=-4)
         
         # 显示输出数组标题和初始状态
         self.play(FadeIn(output_squares["title"]))
@@ -70,49 +80,33 @@ class CountingSort(Scene):
         self.play(*[FadeIn(num) for num in output_squares["numbers"]])
         self.wait(1)
         
-        # 计算累积计数
-        for i in range(1, len(count_array)):
-            count_array[i] += count_array[i - 1]
-            
-            # 更新计数数组显示
-            new_count = Text(str(count_array[i]), font_size=36)
-            new_count.move_to(count_squares["numbers"][i])
-            
-            self.play(
-                count_squares["squares"][i].animate.set_fill(BLUE, opacity=0.5),
-                Transform(count_squares["numbers"][i], new_count)
-            )
-            self.wait(0.3)
-            self.play(
-                count_squares["squares"][i].animate.set_fill(WHITE, opacity=0)
-            )
-        
         # 构建输出数组
-        for i in range(len(input_array) - 1, -1, -1):
-            num = input_array[i]
-            output_index = count_array[num] - 1
+        j = 0
+        for i in range(len(count_array)):
+            while count_array[i] > 0:
+                count_array[i] -= 1
+                output_array[j] = i
+                
+                new_output_num = Text(str(output_array[j]), font_size=36)
+                new_output_num.move_to(output_squares["numbers"][j])
+                new_count_num = Text(str(count_array[i]), font_size=36)
+                new_count_num.move_to(count_squares["numbers"][i])
+                self.play(
+                    Transform(count_squares["numbers"][i], new_count_num),
+                    Transform(output_squares["numbers"][j], new_output_num),
+                    count_squares["squares"][i].animate.set_fill(GREEN, opacity=0.5),
+                    output_squares["squares"][j].animate.set_fill(GREEN, opacity=0.5),
+                )
+                self.wait(0.1)
+                self.play(
+                    count_squares["squares"][i].animate.set_fill(WHITE, opacity=0),
+                    output_squares["squares"][j].animate.set_fill(WHITE, opacity=0)
+                )
+                
+                j = j + 1
             
-            # 更新输出数组
-            output_array[output_index] = num
-            new_num = Text(str(num), font_size=36)
-            new_num.move_to(output_squares["numbers"][output_index])
+        self.wait(1)
             
-            # 动画展示过程
-            self.play(
-                input_squares["squares"][i].animate.set_fill(GREEN, opacity=0.5),
-                output_squares["squares"][output_index].animate.set_fill(GREEN, opacity=0.5),
-                Transform(output_squares["numbers"][output_index], new_num)
-            )
-            self.wait(0.3)
-            
-            # 更新计数并恢复颜色
-            count_array[num] -= 1
-            self.play(
-                input_squares["squares"][i].animate.set_fill(WHITE, opacity=0),
-                output_squares["squares"][output_index].animate.set_fill(WHITE, opacity=0)
-            )
-        
-        self.wait(2)
         
     
     def create_array(self, array, title_text, y_offset=0):
@@ -150,3 +144,11 @@ class CountingSort(Scene):
             result["numbers"].append(number)
         
         return result
+      
+if __name__ == "__main__":
+    # 低质量预览: python main.py -pql
+    # 中等质量: python main.py -pqm
+    # 高质量: python main.py -pqh
+    # 最高质量: python main.py -pqk
+    scene = CountingSort()
+    scene.render()
